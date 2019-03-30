@@ -30,6 +30,8 @@ export default (app, gl) => class Renderer {
     if (!this.running)
       return;
 
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     this.t_last = this.t_curr;
     this.t_curr = t;
     const dt = t - this.t_last;
@@ -43,8 +45,8 @@ export default (app, gl) => class Renderer {
   }
 
   on_resize() {
-    const { canvas } = app;
-    if (app.isMac) {
+    const { canvas, is_mac } = app;
+    if (is_mac) {
       canvas.height = 2 * canvas.clientHeight;
       canvas.width = 2 * canvas.clientWidth;
     } else {

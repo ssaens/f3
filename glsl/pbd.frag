@@ -11,7 +11,7 @@ uniform mediump float radius;
 uniform lowp float t;
 uniform lowp vec2 mouse;
 
-uniform sampler2D positionBuffer;
+uniform sampler2D position_buffer;
 
 const vec3 lpos = vec3(0.f, 0.f, 1.f);
 const vec3 ambient = vec3(0.05f, 0.2f, 0.3f);

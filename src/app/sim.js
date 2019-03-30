@@ -1,4 +1,4 @@
-import { Program, Texture, toHalf } from '~/src/gl-util';
+import { Program, Texture, to_half } from '~/src/gl-util';
 import vertSrc from '~/glsl/pbd.vert';
 import fragSrc from '~/glsl/pbd.frag';
 
@@ -9,8 +9,10 @@ export default (app, gl) => class PBDSimulation {
     this.framebuffer = null;
     this.framebuffers = [];
 
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    this.next_id;
+
+    const position_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
 
     const positions = new Float32Array([
       -0.5,  0.5,
@@ -22,14 +24,14 @@ export default (app, gl) => class PBDSimulation {
     gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
 
     this.program = new Program(gl, 'basic', vertSrc, fragSrc, {
-      attrs: ['aVertexPosition'],
-      uniforms: ['t', 'radius', 'mouse', 'positionBuffer']
+      attrs: ['in_pos'],
+      uniforms: ['t', 'radius', 'mouse', 'position_buffer']
     });
 
     this.program.use();
-    gl.uniform1f(this.program.uniforms.radius, app.isMac ? 100 : 50);
+    gl.uniform1f(this.program.uniforms.radius, app.is_mac ? 100 : 50);
 
-    this.program.setAttr('aVertexPosition', 2, gl.FLOAT, false, 0, 0);
+    this.program.set_attr('in_pos', 2, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     this.program.unuse();
 
@@ -38,7 +40,7 @@ export default (app, gl) => class PBDSimulation {
 
   init() {
     const positions = new Uint16Array([
-      toHalf(1), 0, 0, 0, toHalf(1), 0, 0, 0, toHalf(1), toHalf(1), toHalf(1), toHalf(1)
+      to_half(1), 0, 0, 0, to_half(1), 0, 0, 0, to_half(1), to_half(1), to_half(1), to_half(1)
     ]);
     this.posTexture = new Texture(gl,
                                    0,
@@ -53,15 +55,17 @@ export default (app, gl) => class PBDSimulation {
     this.program.use();
     gl.activeTexture(gl.TEXTURE0);
     this.posTexture.bind();
-    gl.uniform1i(this.program.uniforms.positionBuffer, 0);
+    gl.uniform1i(this.program.uniforms.position_buffer, 0);
     this.program.unuse();
   }
 
-  generateParticles(w, h) {
+  generate_particles(w, h) {
     const positions = [];
+    const ids = [];
     for (let x = -w / 2; x < w / 2; ++x) {
       for (let y = -h / 2; y < h / 2; ++y) {
         positions.push(x, y);
+        ids.push(++this.next_id);
       }
     }
   }
@@ -71,13 +75,12 @@ export default (app, gl) => class PBDSimulation {
   }
 
   render() {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    const { canvas, input, isMac, renderer } = app;
+    const { canvas, input, is_mac, renderer } = app;
     gl.viewport(0, 0, canvas.width, canvas.height);
 
     this.program.use();
     gl.uniform1f(this.program.uniforms.t, renderer.t_curr);
-    if (isMac)
+    if (is_mac)
       gl.uniform2f(this.program.uniforms.mouse, 2 * input.mouse.x / canvas.width, 2 * input.mouse.y / canvas.height);
     else
       gl.uniform2f(this.program.uniforms.mouse, input.mouse.x / canvas.width, input.mouse.y / canvas.height);

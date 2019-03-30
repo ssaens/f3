@@ -11,23 +11,23 @@ export default class PBDApplication {
 
     this.initialized = false;
     this.paused = true;
-    this.isMac = /mac/i.test(window.navigator.platform);
+    this.is_mac = /mac/i.test(window.navigator.platform);
 
     this.gl = null;
     this.sim = null;
     this.renderer = null;
 
     this.input = new InputManager();
-    this.infoBox = new InfoBox();
+    this.info_box = new InfoBox();
 
-    this.samplePerformance = this.samplePerformance.bind(this);
-    this.onMouseMove = this.onMouseMove.bind(this);
+    this.sample_performance = this.sample_performance.bind(this);
+    this.on_mousemove = this.on_mousemove.bind(this);
 
-    this.input.on('mousemove', this.onMouseMove);
+    this.input.on('mousemove', this.on_mousemove);
   }
 
   init() {
-    this.infoBox.info = { state: 'initializing...' };
+    this.info_box.info = { state: 'initializing...' };
 
     const gl = this.canvas.getContext("webgl2");
     if (!gl)
@@ -45,7 +45,7 @@ export default class PBDApplication {
     this.info = { state: 'initialized' };
   }
 
-  onMouseMove(input) {
+  on_mousemove(input) {
     this.info = {
       ...this.info,
       mouse: `${input.mouse.x}, ${input.mouse.y}`
@@ -67,7 +67,7 @@ export default class PBDApplication {
     window.setTimeout(this.samplePerformance, 1000);
   }
 
-  samplePerformance() {
+  sample_performance() {
     if (!this.renderer.running)
       return;
 
@@ -90,10 +90,10 @@ export default class PBDApplication {
   }
 
   get info() {
-    return this.infoBox.info;
+    return this.info_box.info;
   }
 
   set info(info) {
-    this.infoBox.info = info;
+    this.info_box.info = info;
   }
 }

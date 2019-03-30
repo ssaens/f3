@@ -65,12 +65,12 @@ export class Program {
         console.warn(`shader uniform ${uniform} in program ${name} not found`);
     });
 
-    this.typeToUniformFuncMap = Program.buildTypeToUniformFuncMap(gl);
+    this.type_to_uniform_map = Program.build_type_to_uniform_func_map(gl);
     this.gl = gl;
     this.pid = pid;
   }
 
-  setAttr(name, ...args) {
+  set_attr(name, ...args) {
     const i = this.attrs[name];
     if (typeof i === 'undefined')
       return false;
@@ -79,16 +79,16 @@ export class Program {
     this.gl.enableVertexAttribArray(i);
   }
 
-  setUniform(name, ...args) {
+  set_uniform(name, ...args) {
     this.use();
 
-    const { gl, typeToUniformFuncMap, uniforms } = this;
+    const { gl, type_to_uniform_map, uniforms } = this;
     const i = uniforms[name];
     if (typeof i === 'undefined')
       return false;
 
     const type = gl.getActiveUniform(this.pid, i);
-    typeToUniformFuncMap[type](...args);
+    type_to_uniform_map[type](...args);
     this.unuse();
   }
 
@@ -100,7 +100,7 @@ export class Program {
     this.gl.useProgram(null);
   }
 
-  static buildTypeToUniformFuncMap(gl) {
+  static build_type_to_uniform_func_map(gl) {
     // return {
     //   [gl.FLOAT],
     //   [gl.FLOAT_VEC2],
@@ -151,7 +151,7 @@ export class Program {
 /**
  * ref: http://stackoverflow.com/questions/32633585/how-do-you-convert-to-half-floats-in-javascript
  */
-export const toHalf = (function() {
+export const to_half = (function() {
 
    var floatView = new Float32Array(1);
    var int32View = new Int32Array(floatView.buffer);

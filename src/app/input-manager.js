@@ -8,19 +8,19 @@ export default class InputManager {
 
     this.handlers = {};
     
-    this.onClick = this.onClick.bind(this);
-    this.onMouse = this.onMouse.bind(this);
-    this.onScroll = this.onScroll.bind(this);
+    this.on_click = this.on_click.bind(this);
+    this.on_mouse = this.on_mouse.bind(this);
+    this.on_scroll = this.on_scroll.bind(this);
 
     this.init();
   }
 
   init() {
-    window.addEventListener('mousemove', this.onMouse);
+    window.addEventListener('mousemove', this.on_mouse);
   }
 
   destroy() {
-    window.removeEventListener('mousemove', this.onMouse);
+    window.removeEventListener('mousemove', this.on_mouse);
   }
 
   on(event, handler) {
@@ -37,18 +37,18 @@ export default class InputManager {
     this.handlers[event] = this.handlers[event].filter(h => h !== handler);
   }
 
-  onClick() {
+  on_click() {
 
   }
 
-  onMouse(e) {
+  on_mouse(e) {
     this.mouse.x = e.offsetX;
     this.mouse.y = e.offsetY;
 
     this.handlers['mousemove'].forEach(h => h(this, e));
   }
 
-  onScroll() {
+  on_scroll() {
 
   }
 }
