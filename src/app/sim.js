@@ -28,15 +28,17 @@ export default (app, gl) => class PBDSimulation {
     this.init_programs();
     this.init_textures(positions);
 
+    this.program.use();
+    gl.uniform1f(this.program.uniforms.radius, app.is_mac ? 100 : 50);
+    gl.uniform1i(this.program.uniforms.pos_buf, 0);
+    gl.uniform1ui(this.program.uniforms.num_particles, this.num_particles);
+
     const particle_id_buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, particle_id_buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(this.particles), gl.STATIC_DRAW);
-
-    this.program.use();
-    gl.uniform1f(this.program.uniforms.radius, app.is_mac ? 100 : 50);
-
     this.program.set_attr('id', 1, gl.UNSIGNED_SHORT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
     this.program.unuse();
 
   }
@@ -44,25 +46,22 @@ export default (app, gl) => class PBDSimulation {
   init_programs() {
     this.program = new Program(gl, 'basic', vertSrc, fragSrc, {
       attrs: ['id'],
-      uniforms: ['t', 'radius', 'mouse', 'pos_buf']
+      uniforms: ['t', 'radius', 'mouse', 'pos_buf', 'num_particles']
     });
   }
 
   init_textures(positions) {
     const pos = new Texture(gl, 0, 
                             gl.RG16F, 
-                            4, 1, 
+                            5, 1, 
                             0, 
                             gl.RG, gl.HALF_FLOAT, 
                             new Uint16Array(positions.map(to_half)));
 
     this.textures.pos = pos;
 
-    this.program.use();
     gl.activeTexture(gl.TEXTURE0);
     pos.bind();
-    gl.uniform1i(this.program.uniforms.position_buffer, 0);
-    this.program.unuse();
   }
 
   generate_particles(w, h) {
@@ -73,8 +72,8 @@ export default (app, gl) => class PBDSimulation {
     //     this.particles.push(++this.next_id);
     //   }
     // }
-    this.particles.push(0, 1, 2, 3);
-    return [-0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5];
+    this.particles.push(0, 1, 2, 3, 4);
+    return [-0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0, 0];
   }
 
   step(dt) {
@@ -92,7 +91,7 @@ export default (app, gl) => class PBDSimulation {
     else
       gl.uniform2f(this.program.uniforms.mouse, input.mouse.x / canvas.width, input.mouse.y / canvas.height);
 
-    gl.drawArrays(gl.POINTS, 0, 4);
+    gl.drawArrays(gl.POINTS, 0, this.num_particles);
     this.program.unuse();
   }
 
