@@ -42,14 +42,11 @@ export default class PBDApplication {
     this.renderer.on_resize();
 
     this.initialized = true;
-    this.info = { state: 'initialized' };
+    this.info = { ...this.info, state: 'initialized' };
   }
 
   on_mousemove(input) {
-    this.info = {
-      ...this.info,
-      mouse: `${input.mouse.x}, ${input.mouse.y}`
-    };
+    this.info = { ...this.info, mouse: `${input.mouse.x}, ${input.mouse.y}` };
   }
 
   run() {
@@ -57,10 +54,7 @@ export default class PBDApplication {
       throw new Error('application has not been initialized');
 
     this.paused = false;
-    this.info = { 
-      ...this.info,
-      state: 'running'
-    };
+    this.info = { ...this.info, state: 'running' };
 
     this.renderer.start();
 
@@ -72,10 +66,7 @@ export default class PBDApplication {
       return;
 
     const dt = this.t - this.tLast;
-    this.info = { 
-      ...this.info,
-      fps: `${this.renderer.avg_fps.toFixed(2)} fps`
-    };
+    this.info = { ...this.info, fps: `${this.renderer.avg_fps.toFixed(2)} fps` };
 
     window.setTimeout(this.sample_performance, 1000);
   }

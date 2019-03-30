@@ -4,7 +4,7 @@ import fragSrc from '~/glsl/pbd.frag';
 
 export default (app, gl) => class PBDSimulation {
   constructor(opts={}) {
-    this.particle_radius = 20;
+    this.particle_radius = 16;
 
     this.info = {};
     this.textures = {};
@@ -14,6 +14,7 @@ export default (app, gl) => class PBDSimulation {
     this.next_id = -1;
     this.particles = [];
     this.textures = {
+      meta: null,
       pos: null,
       vel: null,
       pred_pos: null,
@@ -25,7 +26,9 @@ export default (app, gl) => class PBDSimulation {
   }
 
   init() {
-    const positions = this.generate_particles({ d_x: 20 });
+    const positions = this.generate_particles({ d_x: 30, d_y: 15 });
+
+    app.info = { ...app.info, particles: this.num_particles };
 
     this.init_programs();
     this.init_textures(positions);
@@ -53,8 +56,9 @@ export default (app, gl) => class PBDSimulation {
 
     let x;
     let y;
-    for (let i = -num_w_particles / 2; i <= num_w_particles / 2; ++i) {
-      for (let j = -num_h_particles / 2; j <= num_h_particles / 2; ++j) {
+    for (let i = -num_w_particles / 2; i < num_w_particles / 2; ++i) {
+      for (let j = -num_h_particles / 2; j < num_h_particles / 2; ++j) {
+        let cell = 0;
         positions.push(o_x + i * offset_x, o_y + j * offset_y);
         this.particles.push(++this.next_id);
       }
@@ -71,9 +75,11 @@ export default (app, gl) => class PBDSimulation {
   }
 
   init_textures(positions) {
+    const meta = null;
+
     const pos = new Texture(gl, 0, 
                             gl.RG16F, 
-                            positions.length / 2, 1, 
+                            this.num_particles, 1, 
                             0, 
                             gl.RG, gl.HALF_FLOAT, 
                             new Uint16Array(positions.map(to_half)));
