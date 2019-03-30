@@ -1,22 +1,19 @@
 #version 300 es
-layout(location = 0) in vec2 in_pos;
+layout(location = 0) in float id;
 
 out vec3 pos;
-out vec4 color;
-flat out int ind;
+flat out float _id;
 
 uniform mediump float radius;
-uniform lowp float t;
-uniform lowp vec2 mouse;
-
-uniform sampler2D position_buffer;
+uniform sampler2D pos_buf;
 
 void main() {
-  gl_PointSize = radius;
+  vec2 in_pos = texture(pos_buf, vec2(id / 4., 0)).xy;
   vec3 p = vec3(in_pos, 0.f);
   gl_Position = vec4(p, 1.f);
 
+  gl_PointSize = radius;
+
   pos = p;
-  ind = gl_VertexID;
-  color = texture(position_buffer, vec2(float(ind) / 4., 0));
+  _id = id;
 }

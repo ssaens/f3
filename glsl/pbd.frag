@@ -2,8 +2,7 @@
 precision mediump float;
 
 in vec3 pos;
-in vec4 color;
-flat in int ind;
+flat in float _id;
 
 out vec4 f_color;
 
@@ -11,10 +10,9 @@ uniform mediump float radius;
 uniform lowp float t;
 uniform lowp vec2 mouse;
 
-uniform sampler2D position_buffer;
-
 const vec3 lpos = vec3(0.f, 0.f, 1.f);
 const vec3 ambient = vec3(0.05f, 0.2f, 0.3f);
+const vec3 color = vec3(0.15f, 0.65f, 1.f);
 
 void main() {
   vec3 n;

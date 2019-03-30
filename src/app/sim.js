@@ -9,65 +9,72 @@ export default (app, gl) => class PBDSimulation {
     this.framebuffer = null;
     this.framebuffers = [];
 
-    this.next_id;
-
-    const position_buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-
-    const positions = new Float32Array([
-      -0.5,  0.5,
-      0.5,  0.5,
-      -0.5,  -0.5,
-      0.5,  -0.5,
-    ]);
-
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-    this.program = new Program(gl, 'basic', vertSrc, fragSrc, {
-      attrs: ['in_pos'],
-      uniforms: ['t', 'radius', 'mouse', 'position_buffer']
-    });
-
-    this.program.use();
-    gl.uniform1f(this.program.uniforms.radius, app.is_mac ? 100 : 50);
-
-    this.program.set_attr('in_pos', 2, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    this.program.unuse();
+    this.next_id = -1;
+    this.particles = [];
+    this.textures = {
+      pos: null,
+      vel: null,
+      pred_pos: null,
+      temp: null,
+      density_lambda: null
+    };
 
     this.init();
   }
 
   init() {
-    const positions = new Uint16Array([
-      to_half(1), 0, 0, 0, to_half(1), 0, 0, 0, to_half(1), to_half(1), to_half(1), to_half(1)
-    ]);
-    this.posTexture = new Texture(gl,
-                                   0,
-                                   gl.RGB16F,
-                                   4,
-                                   1,
-                                   0,
-                                   gl.RGB,
-                                   gl.HALF_FLOAT,
-                                   positions);
+    const positions = this.generate_particles();
+
+    this.init_programs();
+    this.init_textures(positions);
+
+    const particle_id_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, particle_id_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(this.particles), gl.STATIC_DRAW);
+
+    this.program.use();
+    gl.uniform1f(this.program.uniforms.radius, app.is_mac ? 100 : 50);
+
+    this.program.set_attr('id', 1, gl.UNSIGNED_SHORT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    this.program.unuse();
+
+  }
+
+  init_programs() {
+    this.program = new Program(gl, 'basic', vertSrc, fragSrc, {
+      attrs: ['id'],
+      uniforms: ['t', 'radius', 'mouse', 'pos_buf']
+    });
+  }
+
+  init_textures(positions) {
+    const pos = new Texture(gl, 0, 
+                            gl.RG16F, 
+                            4, 1, 
+                            0, 
+                            gl.RG, gl.HALF_FLOAT, 
+                            new Uint16Array(positions.map(to_half)));
+
+    this.textures.pos = pos;
 
     this.program.use();
     gl.activeTexture(gl.TEXTURE0);
-    this.posTexture.bind();
+    pos.bind();
     gl.uniform1i(this.program.uniforms.position_buffer, 0);
     this.program.unuse();
   }
 
   generate_particles(w, h) {
-    const positions = [];
-    const ids = [];
-    for (let x = -w / 2; x < w / 2; ++x) {
-      for (let y = -h / 2; y < h / 2; ++y) {
-        positions.push(x, y);
-        ids.push(++this.next_id);
-      }
-    }
+    // const positions = [];
+    // for (let x = -w / 2; x < w / 2; ++x) {
+    //   for (let y = -h / 2; y < h / 2; ++y) {
+    //     positions.push(x, y);
+    //     this.particles.push(++this.next_id);
+    //   }
+    // }
+    this.particles.push(0, 1, 2, 3);
+    return [-0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5];
   }
 
   step(dt) {
@@ -87,5 +94,9 @@ export default (app, gl) => class PBDSimulation {
 
     gl.drawArrays(gl.POINTS, 0, 4);
     this.program.unuse();
+  }
+
+  get num_particles() {
+    return this.particles.length;
   }
 };

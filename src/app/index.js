@@ -64,7 +64,7 @@ export default class PBDApplication {
 
     this.renderer.start();
 
-    window.setTimeout(this.samplePerformance, 1000);
+    window.setTimeout(this.sample_performance, 1000);
   }
 
   sample_performance() {
@@ -77,7 +77,7 @@ export default class PBDApplication {
       fps: `${this.renderer.avg_fps.toFixed(2)} fps`
     };
 
-    window.setTimeout(this.samplePerformance, 1000);
+    window.setTimeout(this.sample_performance, 1000);
   }
 
   pause() {
