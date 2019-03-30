@@ -17,4 +17,4 @@ module.exports="#version 300 es\nprecision mediump float;\n#define GLSLIFY 1\n\n
 },{"./input-manager":"PVdp","./sim":"EQ8R","./ui-interface":"xVhK","./renderer":"J3mu"}],"HJD/":[function(require,module,exports) {
 "use strict";var e=u(require("./app"));function u(e){return e&&e.__esModule?e:{default:e}}function n(){var u=new e.default("view");u.init(),u.run()}n();
 },{"./app":"m9zS"}]},{},["HJD/"], null)
-//# sourceMappingURL=docs/main.e00f3392.js.map
+//# sourceMappingURL=main.e00f3392.js.map
