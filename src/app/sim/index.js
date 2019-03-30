@@ -4,6 +4,8 @@ import fragSrc from '~/glsl/pbd.frag';
 
 export default (app, gl) => class PBDSimulation {
   constructor(opts={}) {
+    this.particle_radius = 20;
+
     this.info = {};
     this.textures = {};
     this.framebuffer = null;
@@ -23,13 +25,13 @@ export default (app, gl) => class PBDSimulation {
   }
 
   init() {
-    const positions = this.generate_particles();
+    const positions = this.generate_particles({ d_x: 20 });
 
     this.init_programs();
     this.init_textures(positions);
 
     this.program.use();
-    gl.uniform1f(this.program.uniforms.radius, app.is_mac ? 100 : 50);
+    gl.uniform1f(this.program.uniforms.radius, app.is_mac ? this.particle_radius * 2 : this.particle_radius);
     gl.uniform1i(this.program.uniforms.pos_buf, 0);
     gl.uniform1ui(this.program.uniforms.num_particles, this.num_particles);
 
@@ -40,7 +42,25 @@ export default (app, gl) => class PBDSimulation {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     this.program.unuse();
+  }
 
+  generate_particles({ o_x=0, o_y=0, w=1, h=1, d_x=10, d_y=10 }) {
+    const positions = [];
+    const num_w_particles = w * d_x;
+    const num_h_particles = h * d_y;
+    const offset_x = w / num_w_particles;
+    const offset_y = h / num_h_particles;
+
+    let x;
+    let y;
+    for (let i = -num_w_particles / 2; i <= num_w_particles / 2; ++i) {
+      for (let j = -num_h_particles / 2; j <= num_h_particles / 2; ++j) {
+        positions.push(o_x + i * offset_x, o_y + j * offset_y);
+        this.particles.push(++this.next_id);
+      }
+    }
+
+    return positions;
   }
 
   init_programs() {
@@ -53,7 +73,7 @@ export default (app, gl) => class PBDSimulation {
   init_textures(positions) {
     const pos = new Texture(gl, 0, 
                             gl.RG16F, 
-                            5, 1, 
+                            positions.length / 2, 1, 
                             0, 
                             gl.RG, gl.HALF_FLOAT, 
                             new Uint16Array(positions.map(to_half)));
@@ -62,18 +82,6 @@ export default (app, gl) => class PBDSimulation {
 
     gl.activeTexture(gl.TEXTURE0);
     pos.bind();
-  }
-
-  generate_particles(w, h) {
-    // const positions = [];
-    // for (let x = -w / 2; x < w / 2; ++x) {
-    //   for (let y = -h / 2; y < h / 2; ++y) {
-    //     positions.push(x, y);
-    //     this.particles.push(++this.next_id);
-    //   }
-    // }
-    this.particles.push(0, 1, 2, 3, 4);
-    return [-0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0, 0];
   }
 
   step(dt) {
