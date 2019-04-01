@@ -1,5 +1,5 @@
-import pos_update_vsrc from '~/glsl/pos-update.vert';
-import pos_update_fsrc from '~/glsl/pos-update.frag';
+import pos_update_vsrc from './shaders/update-pos.vert';
+import pos_update_fsrc from './shaders/update-pos.frag';
 import { Program } from '~/src/gl-util';
 
 export default (gl, app, sim) => new (class PositionUpate {

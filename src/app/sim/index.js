@@ -1,8 +1,7 @@
-import { Program, Texture, to_half } from '~/src/gl-util';
-import s1_pred_pos from './steps/s1-predict-pos';
+import { Texture, to_half } from '~/src/gl-util';
+import s1_pred_pos from './steps/s1-pred-pos';
 import s7_update_pos from './steps/s7-update-pos';
-import screen_vert from '~/glsl/screen.vert';
-import screen_frag from '~/glsl/screen.frag';
+import s8_render_particles from './steps/s8-render-particles';
 
 export default (app, gl) => class PBDSimulation {
   constructor(opts={}) {
@@ -30,7 +29,8 @@ export default (app, gl) => class PBDSimulation {
     
     this.steps = {
       pred_pos: s1_pred_pos(gl, app, this),
-      update_pos: s7_update_pos(gl, app, this)
+      update_pos: s7_update_pos(gl, app, this),
+      render_particles: s8_render_particles(gl, app, this)
     }
 
     this.init();
@@ -77,19 +77,7 @@ export default (app, gl) => class PBDSimulation {
   init_programs() {
     this.steps.pred_pos.init();
     this.steps.update_pos.init();
-
-    this.screen_prog = new Program(gl, 'screen', screen_vert, screen_frag, {
-      attrs: ['id'],
-      uniforms: ['num_particles', 'pos_buf', 'radius', 't', 'mouse']
-    });
-
-    this.screen_prog.set_attr('id', 1, gl.UNSIGNED_SHORT, false, 0, 0);
-
-    this.screen_prog.use();
-    gl.uniform1i(this.screen_prog.uniforms.pos_buf, 0);
-    gl.uniform1f(this.screen_prog.uniforms.radius, app.is_mac ? this.particle_radius * 2 : this.particle_radius);
-    gl.uniform1ui(this.screen_prog.uniforms.num_particles, this.num_particles);
-    this.screen_prog.unuse();
+    this.steps.render_particles.init();
   }
 
   init_textures(positions) {
@@ -164,25 +152,7 @@ export default (app, gl) => class PBDSimulation {
   }
 
   render() {
-    const { canvas, input, is_mac, renderer } = app;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    gl.activeTexture(gl.TEXTURE0);
-    this.textures.pos.bind();
-
-    this.screen_prog.use();
-    gl.uniform1i(this.screen_prog.uniforms.pos_buf, 0);
-    gl.uniform1f(this.screen_prog.uniforms.t, renderer.t_curr);
-    if (is_mac)
-      gl.uniform2f(this.screen_prog.uniforms.mouse, 2 * input.mouse.x / canvas.width, 2 * input.mouse.y / canvas.height);
-    else
-      gl.uniform2f(this.screen_prog.uniforms.mouse, input.mouse.x / canvas.width, input.mouse.y / canvas.height);
-
-    gl.clearColor(0.2, 0.2, 0.2, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.drawArrays(gl.POINTS, 0, this.num_particles);
-    this.screen_prog.unuse();
+    this.steps.render_particles.exec();
   }
 
   get num_particles() {

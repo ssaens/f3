@@ -4,11 +4,11 @@ precision mediump float;
 in vec3 pos;
 flat in float _id;
 
-out vec4 f_color;
+uniform mediump float u_radius;
+uniform lowp float u_t;
+uniform lowp vec2 u_mouse;
 
-uniform mediump float radius;
-uniform lowp float t;
-uniform lowp vec2 mouse;
+out vec4 f_color;
 
 const vec3 lpos = vec3(0.f, 0.f, 1.f);
 const vec3 ambient = vec3(0.05f, 0.2f, 0.3f);
@@ -24,7 +24,7 @@ void main() {
 
   n.z = sqrt(1.f - r2);
 
-  vec2 n_mouse = 2.f * vec2(mouse.x, -mouse.y) - vec2(1.f, -1.f);
+  vec2 n_mouse = 2.f * vec2(u_mouse.x, -u_mouse.y) - vec2(1.f, -1.f);
 
   vec3 lpos_curr = vec3(n_mouse, 1.f);
   float diffuse = clamp(dot(n, lpos_curr - pos), 0.f, 1.f);

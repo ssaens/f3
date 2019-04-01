@@ -1,6 +1,6 @@
-import pred_pos_vsrc from '~/glsl/pred-pos.vert';
-import pred_pos_fsrc from '~/glsl/pred-pos.frag';
-import { Program, Texture, to_half } from '~/src/gl-util';
+import pred_pos_vsrc from './shaders/pred-pos.vert';
+import pred_pos_fsrc from './shaders/pred-pos.frag';
+import { Program } from '~/src/gl-util';
 
 export default (gl, app, sim) => new (class PredPos {
   init() {
