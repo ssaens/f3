@@ -56,13 +56,13 @@ export class Program {
     inputs.attrs && inputs.attrs.forEach(attr => {
       this.attrs[attr] = gl.getAttribLocation(pid, attr);
       if (this.attrs[attr] === -1)
-        console.warn(`shader attribute ${attr} in program ${name} not found`);
+        throw new Error(`program attr "${attr}" not found in program "${this.name}"`);
     });
 
     inputs.uniforms && inputs.uniforms.forEach(uniform => {
       this.uniforms[uniform] = gl.getUniformLocation(pid, uniform);
       if (this.uniforms[uniform] === -1)
-        console.warn(`shader uniform ${uniform} in program ${name} not found`);
+        throw new Error(`program uniform "${uniform}" not found in program "${this.name}"`);
     });
 
     this.type_to_uniform_map = Program.build_type_to_uniform_func_map(gl);
@@ -72,8 +72,8 @@ export class Program {
 
   set_attr(name, ...args) {
     const i = this.attrs[name];
-    if (typeof i === 'undefined')
-      return false;
+    if (i === -1)
+      throw new Error(`program attr "${name}" not found in program "${this.name}"`);
 
     this.gl.vertexAttribPointer(i, ...args);
     this.gl.enableVertexAttribArray(i);
@@ -84,7 +84,7 @@ export class Program {
 
     const { gl, type_to_uniform_map, uniforms } = this;
     const i = uniforms[name];
-    if (typeof i === 'undefined')
+    if (i === -1)
       return false;
 
     const type = gl.getActiveUniform(this.pid, i);
@@ -147,6 +147,39 @@ export class Program {
     // }
   }
 }
+
+// export const GLContextUtil => gl => {
+
+//   const Shader = _Shader(gl);
+//   const Texture = _Texture(gl);
+
+//   return new class ({
+//     buffer(buffer) {
+//       gl.bindBuffer(gl.ARRAY_BUFFER);
+//       return this;
+//     }
+
+//     program(program) {
+//       if (!program)
+//         gl.useProgram(null);
+//       else
+//         program.use();
+//       return this;
+//     }
+
+//     framebuffer(fbo) {
+//       gl.bindFramebuffer(fbo);
+//     }
+
+//     viewport(...args) {
+//       this.viewport = viewport;
+//     }
+
+//     clear(...args) {
+
+//     }
+//   })();
+// }
 
 /**
  * ref: http://stackoverflow.com/questions/32633585/how-do-you-convert-to-half-floats-in-javascript

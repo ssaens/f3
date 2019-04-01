@@ -13,7 +13,8 @@ export default (app, gl) => class Renderer {
   }
 
   init() {
-    gl.clearColor(0.2, 0.2, 0.2, 1.0);
+    gl.getExtension('EXT_color_buffer_float');
+
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
@@ -29,8 +30,6 @@ export default (app, gl) => class Renderer {
   on_frame(t) {
     if (!this.running)
       return;
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     this.t_last = this.t_curr;
     this.t_curr = t;
