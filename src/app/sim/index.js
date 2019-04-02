@@ -10,12 +10,13 @@ export default (app, gl) => class PBDSimulation {
   constructor(opts={}) {
     this.next_id = -1;
     this.particles = [];
+    this.params_dirty = false;
 
     this.framebuffer = 1;
     this.framebuffers = [];
 
     this.s_params = {
-      dt: 0.01,
+      dt: 0.005,
       kernel_r: 0.1,
       bin_size: 0.1,
       rest_density: 0,
@@ -34,8 +35,7 @@ export default (app, gl) => class PBDSimulation {
     };
 
     this.buffers = {
-      particle_ids: null,
-      quad_vertices: null
+      particle_ids: null
     };
 
     this.textures = {

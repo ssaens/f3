@@ -3,6 +3,7 @@ precision mediump float;
 
 in float _u_target;
 
+uniform float u_dt;
 uniform sampler2D u_pos_buf;
 uniform sampler2D u_vel_buf;
 
@@ -16,8 +17,7 @@ void main() {
   vec2 pos = texture(u_pos_buf, vec2(_u_target, 0)).xy;
   vec2 vel = texture(u_vel_buf, vec2(_u_target, 0)).xy;
 
-  float dt = 0.001f;
-  vec2 dp = vel * dt + vec2(0, -9.8f) * dt * dt;
+  vec2 dp = (vel + vec2(0, -9.8f) * u_dt) * u_dt;
 
   vec2 pred_pos = pos + dp;
   _pred_pos = clamp_vec2(pred_pos, 0.f, 4.f, 0.f, 2.f);

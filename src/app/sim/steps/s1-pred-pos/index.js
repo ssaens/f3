@@ -11,6 +11,7 @@ export default (gl, app, sim) => (() => {
       attrs: ['a_id'],
       uniforms: {
         u_num_particles: '1ui', 
+        u_dt: '1f',
         u_pos_buf: '1i', 
         u_vel_buf: '1i'
       }
@@ -20,9 +21,10 @@ export default (gl, app, sim) => (() => {
     gl.bindBuffer(gl.ARRAY_BUFFER, sim.buffers.particle_ids);
     _pred_pos_prog.attr('a_id', 1, gl.UNSIGNED_SHORT, false, 0, 0)
       .use()
+      .uniform('u_num_particles', sim.num_particles)
+      .uniform('u_dt', sim.s_params.dt)
       .uniform('u_pos_buf', 0)
       .uniform('u_vel_buf', 1)
-      .uniform('u_num_particles', sim.num_particles)
       .unuse();
   }
 
