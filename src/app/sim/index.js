@@ -16,13 +16,16 @@ export default (app, gl) => class PBDSimulation {
     this.framebuffers = [];
 
     this.s_params = {
-      dt: 0.005,
+      dt: 0.0083,
       kernel_r: 0.1,
       bin_size: 0.1,
-      rest_density: 0,
-      relaxation: 0,
-      s_corr_radius: 0,
-      xsph_param: 0,
+      rest_density: 7000,
+      relaxation: 800,
+      s_corr_dq_mult: 0,
+      s_corr_k: 0.0005,
+      s_corr_n: 4,
+      vort_eps: 0.00017,
+      visc_c: 0.000001,
       x_bins: 0,
       y_bins: 0,
       num_bins: 0
@@ -124,8 +127,6 @@ export default (app, gl) => class PBDSimulation {
   }
 
   init_textures(positions) {
-    const meta = null;
-
     const pos = new Texture(gl, 0, 
                             gl.RG32F, 
                             this.num_particles, 1, 
@@ -197,6 +198,7 @@ export default (app, gl) => class PBDSimulation {
     this.textures.bins = bins;
     this.textures.bin_count = bin_count;
     this.textures.bin_start = bin_start;
+    this.textures.den = den;
   }
 
   init_framebuffers() {
@@ -210,16 +212,47 @@ export default (app, gl) => class PBDSimulation {
   }
 
   step(dt) {
-    gl.disable(gl.BLEND);
+    if (this.reset_pending) {
+      this.reset();
+      return;
+    }
     this.steps.pred_pos.exec();
     this.steps.jank_frnn.exec();
+    this.steps.calc_lambda.exec();
     this.steps.update_vel.exec();
     this.steps.update_pos.exec();
   }
 
   render() {
-    gl.enable(gl.BLEND);
     this.steps.render_particles.exec();
+  }
+
+  reset() {
+    this.next_id = -1;
+    this.particles.length = 0;
+    const positions = this.generate_particles({ 
+      o_x: this.r_params.width / 2, 
+      o_y: this.r_params.height / 2, 
+      d_x: 20, d_y: 10 
+    });
+
+    this.textures.pos.bind();
+    gl.texImage2D(gl.TEXTURE_2D, 0, 
+                  gl.RG32F, 
+                  this.num_particles, 1, 
+                  0, 
+                  gl.RG, gl.FLOAT, 
+                  new Float32Array(positions));
+
+    this.textures.vel.bind();
+    gl.texImage2D(gl.TEXTURE_2D, 0,
+                  gl.RG32F,
+                  this.num_particles, 1,
+                  0,
+                  gl.RG, gl.FLOAT,
+                  new Float32Array(this.num_particles * 2));
+
+    this.render();
   }
 
   get num_particles() {

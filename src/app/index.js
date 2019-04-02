@@ -43,6 +43,8 @@ export default class PBDApplication {
 
     this.initialized = true;
     this.info = { ...this.info, state: 'initialized' };
+
+    this.sim.render();
   }
 
   on_mousemove(input) {
@@ -79,6 +81,16 @@ export default class PBDApplication {
     delete this.info.fps;
     this.renderer.pause();
     this.paused = true;
+  }
+
+  reset() {
+    this.pause();
+    this.sim.reset();
+    this.info_box.sync();
+  }
+
+  get reset_pending() {
+    return this.sim.reset_pending;
   }
 
   get info() {

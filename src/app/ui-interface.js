@@ -13,31 +13,50 @@ export default app => class InfoBox {
 
     document.body.appendChild(div);
 
-    const button = document.createElement('button');
-    button.innerHTML = 'pause';
-    button.setAttribute('id', 'pause');
-    div.appendChild(button);
+    const pause_button = document.createElement('button');
+    pause_button.innerHTML = 'start';
+    pause_button.setAttribute('id', 'pause');
+    div.appendChild(pause_button);
+
+    const reset_button = document.createElement('button');
+    reset_button.innerHTML = 'reset';
+    reset_button.setAttribute('id', 'reset');
+    div.appendChild(reset_button);
 
     const info = document.createElement('div');
     div.appendChild(info);
 
     this.div = div;
-    this.button = button;
+    this.pause_button = pause_button;
     this.info_elem = info;
     this._info = {};
 
-    this.on_button = this.on_button.bind(this);
-    button.addEventListener('click', this.on_button);
+    this.on_pause = this.on_pause.bind(this);
+    pause_button.addEventListener('click', this.on_pause);
+
+    this.on_reset = this.on_reset.bind(this);
+    reset_button.addEventListener('click', this.on_reset)
   }
 
-  on_button() {
+  on_pause() {
     if (app.paused) {
-      this.button.innerHTML = 'pause';
+      this.pause_button.innerHTML = 'pause';
       app.run();
     } else {
-      this.button.innerHTML = 'resume';
+      this.pause_button.innerHTML = 'resume';
       app.pause();
     }
+  }
+
+  sync() {
+    if (app.paused)
+      this.pause_button.innerHTML = 'resume';
+    else
+      this.pause_button.innerHTML = 'pause';
+  }
+
+  on_reset() {
+    !app.reset_pending && app.reset();
   }
 
   get info() {
