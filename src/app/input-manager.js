@@ -1,4 +1,4 @@
-export default class InputManager {
+export default class EventManager {
   constructor() {
     this.mouse = {
       x: 0,
@@ -21,6 +21,13 @@ export default class InputManager {
 
   destroy() {
     window.removeEventListener('mousemove', this.on_mouse);
+  }
+
+  emit(event, payload) {
+    if (!this.handlers[event])
+      return;
+
+    this.handlers[event].forEach(h => h(this, payload));
   }
 
   on(event, handler) {

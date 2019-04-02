@@ -52,6 +52,7 @@ export class Program {
 
     this.attrs = {};
     this.uniforms = {};
+    this.uniform_setters = {};
 
     inputs.attrs && inputs.attrs.forEach(attr => {
       this.attrs[attr] = gl.getAttribLocation(pid, attr);
@@ -59,45 +60,51 @@ export class Program {
         throw new Error(`program attr "${attr}" not found in program "${this.name}"`);
     });
 
-    inputs.uniforms && inputs.uniforms.forEach(uniform => {
+    inputs.uniforms && Object.entries(inputs.uniforms).forEach(([uniform, type]) => {
       this.uniforms[uniform] = gl.getUniformLocation(pid, uniform);
       if (this.uniforms[uniform] === -1)
         throw new Error(`program uniform "${uniform}" not found in program "${this.name}"`);
+
+      const setter = gl[`uniform${type}`];
+      if (typeof setter === 'undefined')
+        throw new Error(`type for program uniform "${uniform}" not recognized in program "${this.name}"`);
+
+      this.uniform_setters[uniform] = setter;
     });
 
-    this.type_to_uniform_map = Program.build_type_to_uniform_func_map(gl);
     this.gl = gl;
     this.pid = pid;
   }
 
-  set_attr(name, ...args) {
-    const i = this.attrs[name];
-    if (i === -1)
+  attr(name, ...args) {
+    const loc = this.attrs[name];
+    if (loc === -1)
       throw new Error(`program attr "${name}" not found in program "${this.name}"`);
 
-    this.gl.vertexAttribPointer(i, ...args);
-    this.gl.enableVertexAttribArray(i);
+    this.gl.vertexAttribPointer(loc, ...args);
+    this.gl.enableVertexAttribArray(loc);
+    return this;
   }
 
-  set_uniform(name, ...args) {
-    this.use();
+  uniform(name, ...args) {
+    const { gl, uniforms, uniform_setters } = this;
+    const loc = uniforms[name];
+    if (loc === -1)
+      throw new Error(`program uniform "${name}" not found in program "${this.name}"`);
 
-    const { gl, type_to_uniform_map, uniforms } = this;
-    const i = uniforms[name];
-    if (i === -1)
-      return false;
-
-    const type = gl.getActiveUniform(this.pid, i);
-    type_to_uniform_map[type](...args);
-    this.unuse();
+    const setter = uniform_setters[name];
+    setter.call(this.gl, loc, ...args);
+    return this;
   }
 
   use() {
     this.gl.useProgram(this.pid);
+    return this;
   }
 
   unuse() {
     this.gl.useProgram(null);
+    return this;
   }
 
   static build_type_to_uniform_func_map(gl) {
@@ -148,12 +155,25 @@ export class Program {
   }
 }
 
-// export const GLContextUtil => gl => {
+class Buffer {
+  
+}
 
-//   const Shader = _Shader(gl);
-//   const Texture = _Texture(gl);
+// export const GLUtil => gl => {
 
-//   return new class ({
+//   class Shader {
+
+//   }
+
+//   class Program {
+
+//   }
+
+//   class Texture {
+
+//   }
+
+//   return new (class {
 //     buffer(buffer) {
 //       gl.bindBuffer(gl.ARRAY_BUFFER);
 //       return this;
@@ -192,7 +212,7 @@ export const to_half = (function() {
    /* This method is faster than the OpenEXR implementation (very often
     * used, eg. in Ogre), with the additional benefit of rounding, inspired
     * by James Tursa?s half-precision code. */
-   return function toHalf(val) {
+   return function to_half(val) {
 
      floatView[0] = val;
      var x = int32View[0];

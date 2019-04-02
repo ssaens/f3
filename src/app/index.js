@@ -18,7 +18,7 @@ export default class PBDApplication {
     this.renderer = null;
 
     this.input = new InputManager();
-    this.info_box = new InfoBox();
+    this.info_box = new (InfoBox(this))();
 
     this.sample_performance = this.sample_performance.bind(this);
     this.on_mousemove = this.on_mousemove.bind(this);
@@ -78,6 +78,7 @@ export default class PBDApplication {
     };
     delete this.info.fps;
     this.renderer.pause();
+    this.paused = true;
   }
 
   get info() {

@@ -15,7 +15,10 @@ vec2 clamp_vec2(vec2 v, float x_min, float x_max, float y_min, float y_max) {
 void main() {
   vec2 pos = texture(u_pos_buf, vec2(_u_target, 0)).xy;
   vec2 vel = texture(u_vel_buf, vec2(_u_target, 0)).xy;
-  vel += vec2(0, -9.8f) * 0.01667f;
-  vec2 pred_pos = pos + vel * 0.01667f;
+
+  float dt = 0.001f;
+  vec2 dp = vel * dt + vec2(0, -9.8f) * dt * dt;
+
+  vec2 pred_pos = pos + dp;
   _pred_pos = clamp_vec2(pred_pos, -1.f, 1.f, -1.f, 1.f);
 }
