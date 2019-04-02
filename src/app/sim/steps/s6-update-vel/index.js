@@ -7,7 +7,7 @@ export default (gl, app, sim) => (() => {
   let _vel_update_prog;
 
   function init() {
-    _vel_update_prog = new Program(gl, 'vel_update', vel_update_vsrc, vel_update_fsrc, {
+    _vel_update_prog = new Program(gl, 'vel-update', vel_update_vsrc, vel_update_fsrc, {
       attrs: ['a_id'],
       uniforms: {
         u_num_particles: '1ui',

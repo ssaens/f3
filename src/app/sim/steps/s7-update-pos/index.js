@@ -7,7 +7,7 @@ export default (gl, app, sim) => (() => {
   let _pos_update_prog;
 
   function init() {
-    _pos_update_prog = new Program(gl, 'pos_update', pos_update_vsrc, pos_update_fsrc, {
+    _pos_update_prog = new Program(gl, 'pos-update', pos_update_vsrc, pos_update_fsrc, {
       attrs: ['a_id'],
       uniforms: {
         u_num_particles: '1ui',

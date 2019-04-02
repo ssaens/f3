@@ -20,5 +20,5 @@ void main() {
   vec2 dp = vel * dt + vec2(0, -9.8f) * dt * dt;
 
   vec2 pred_pos = pos + dp;
-  _pred_pos = clamp_vec2(pred_pos, -1.f, 1.f, -1.f, 1.f);
+  _pred_pos = clamp_vec2(pred_pos, 0.f, 4.f, 0.f, 2.f);
 }

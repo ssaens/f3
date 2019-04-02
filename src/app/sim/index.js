@@ -1,32 +1,36 @@
 import { Texture, to_half } from '~/src/gl-util';
 import s1_pred_pos from './steps/s1-pred-pos';
 import s2_jank_frnn from './steps/s2-jank-frnn';
+import s3_calc_lambda from './steps/s3-calc-lambda';
 import s6_update_vel from './steps/s6-update-vel';
 import s7_update_pos from './steps/s7-update-pos';
 import s8_render_particles from './steps/s8-render-particles';
 
 export default (app, gl) => class PBDSimulation {
   constructor(opts={}) {
-    this.particle_radius = 16;
     this.next_id = -1;
     this.particles = [];
-    this.num_bins = 2;
 
     this.framebuffer = 1;
     this.framebuffers = [];
 
     this.s_params = {
       dt: 0.01,
+      kernel_r: 0.1,
+      bin_size: 0.1,
       rest_density: 0,
       relaxation: 0,
       s_corr_radius: 0,
-      xsph_param: 0
+      xsph_param: 0,
+      x_bins: 0,
+      y_bins: 0,
+      num_bins: 0
     };
 
     this.r_params = {
-      height: 5,
-      width: 10,
-      radius: 0
+      height: 2,
+      width: 4,
+      radius: 0.1
     };
 
     this.buffers = {
@@ -38,7 +42,7 @@ export default (app, gl) => class PBDSimulation {
       pos: null,                // position
       vel: null,                // velocity 
       pred_pos: null,           // predicted position
-      den: null,                // density
+      den: null,                // density lambda
       temp: null,               // temporary storage
       bins: null,               // particle ids sorted by bin id
       bin_start: null,          // bin id -> index in `bin` texture
@@ -48,6 +52,7 @@ export default (app, gl) => class PBDSimulation {
     this.steps = {
       pred_pos: s1_pred_pos(gl, app, this),
       jank_frnn: s2_jank_frnn(gl, app, this),
+      calc_lambda: s3_calc_lambda(gl, app, this),
       update_vel: s6_update_vel(gl, app, this),
       update_pos: s7_update_pos(gl, app, this),
       render_particles: s8_render_particles(gl, app, this)
@@ -57,7 +62,12 @@ export default (app, gl) => class PBDSimulation {
   }
 
   init() {
-    const positions = this.generate_particles({ d_x: 20, d_y: 10 });
+    this.compute_bounds();
+    const positions = this.generate_particles({ 
+      o_x: this.r_params.width / 2, 
+      o_y: this.r_params.height / 2, 
+      d_x: 20, d_y: 10 
+    });
 
     app.info = { ...app.info, particles: this.num_particles };
 
@@ -85,6 +95,18 @@ export default (app, gl) => class PBDSimulation {
     return positions;
   }
 
+  compute_bounds() {
+    const { bin_size } = this.s_params;
+    const { height, width } = this.r_params;
+
+    const y_bins = Math.ceil(height / bin_size);
+    const x_bins = Math.ceil(width / bin_size);
+
+    this.s_params.y_bins = y_bins;
+    this.s_params.x_bins = x_bins;
+    this.s_params.num_bins = y_bins * x_bins;
+  }
+
   init_buffers() {
     this.buffers.particle_ids = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.particle_ids);
@@ -95,6 +117,7 @@ export default (app, gl) => class PBDSimulation {
   init_programs() {
     this.steps.pred_pos.init();
     this.steps.jank_frnn.init();
+    this.steps.calc_lambda.init();
     this.steps.update_vel.init();
     this.steps.update_pos.init();
     this.steps.render_particles.init();
@@ -145,12 +168,12 @@ export default (app, gl) => class PBDSimulation {
                                   gl.RED_INTEGER, gl.UNSIGNED_INT,
                                   null);
 
-    // const lambda = new Texture(gl, 0,
-    //                            gl.R16F,
-    //                            this.num_particles, 1,
-    //                            0,
-    //                            gl.R, gl.HALF_FLOAT,
-    //                            new Uint16Array(lambdas));
+    const den = new Texture(gl, 0,
+                            gl.R32F,
+                            this.num_particles, 1,
+                            0,
+                            gl.RED, gl.FLOAT,
+                            null);
 
     // const dp_pre = new Texture(gl, 0,
     //                            gl.RG16F,

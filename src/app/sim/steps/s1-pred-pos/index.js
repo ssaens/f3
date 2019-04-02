@@ -7,7 +7,7 @@ export default (gl, app, sim) => (() => {
   let _pred_pos_prog;
 
   function init() {
-    _pred_pos_prog = new Program(gl, 'pred_pos', pred_pos_vsrc, pred_pos_fsrc, {
+    _pred_pos_prog = new Program(gl, 'pred-pos', pred_pos_vsrc, pred_pos_fsrc, {
       attrs: ['a_id'],
       uniforms: {
         u_num_particles: '1ui', 

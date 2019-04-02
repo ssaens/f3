@@ -13,11 +13,11 @@ export default (gl, app, sim) => {
 
   function init() {
     _pos_buf = new Float32Array(sim.num_particles * 4);
-    _counts = new Uint16Array(sim.num_bins);
+    _counts = new Uint16Array(sim.s_params.num_bins);
 
     _bins = new Uint32Array(sim.num_particles);
-    _bin_start = new Uint32Array(sim.num_bins);
-    _bin_count = new Uint32Array(sim.num_bins);
+    _bin_start = new Uint32Array(sim.s_params.num_bins);
+    _bin_count = new Uint32Array(sim.s_params.num_bins);
   }
 
   function exec() {
