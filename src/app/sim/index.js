@@ -72,9 +72,10 @@ export default (app, gl) => class PBDSimulation {
   init() {
     this.compute_bounds();
     const positions = this.generate_particles({ 
+      w: 1.5, h: 1.5,
       o_x: this.r_params.width / 2, 
       o_y: this.r_params.height / 2, 
-      d_x: 25, d_y: 15 
+      d_x: 35, d_y: 25
     });
 
     app.info = { ...app.info, particles: this.num_particles };
@@ -238,9 +239,10 @@ export default (app, gl) => class PBDSimulation {
     this.next_id = -1;
     this.particles.length = 0;
     const positions = this.generate_particles({ 
+      w: 1.5, h: 1.5,
       o_x: this.r_params.width / 2, 
       o_y: this.r_params.height / 2, 
-      d_x: 25, d_y: 15
+      d_x: 35, d_y: 25
     });
 
     this.textures.pos.bind();
