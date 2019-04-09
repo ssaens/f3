@@ -240,7 +240,7 @@ export default (app, gl) => class PBDSimulation {
     const positions = this.generate_particles({ 
       o_x: this.r_params.width / 2, 
       o_y: this.r_params.height / 2, 
-      d_x: 20, d_y: 10 
+      d_x: 25, d_y: 15
     });
 
     this.textures.pos.bind();
