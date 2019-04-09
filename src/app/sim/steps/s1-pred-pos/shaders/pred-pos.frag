@@ -14,6 +14,7 @@ void main() {
   vec2 vel = texture(u_vel_buf, vec2(_u_target, 0)).xy;
 
   vec2 dp = (vel + vec2(0, -9.8f) * u_dt) * u_dt;
+  // vec2 dp = (vel + vec2(0) * u_dt) * u_dt;
 
   _pred_pos = pos + dp;
 }
