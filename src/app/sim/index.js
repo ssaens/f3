@@ -23,9 +23,9 @@ export default (app, gl) => class PBDSimulation {
       bin_size: 0.1,
       rest_density: 7000,
       relaxation: 800,
-      s_corr_dq_mult: 0,
-      s_corr_k: 0.0005,
-      s_corr_n: 4,
+      s_corr_dq_mult: 0.01,
+      s_corr_k: 0.0002,
+      s_corr_n: 3,
       vort_eps: 0.00017,
       visc_c: 0.000001,
       x_bins: 0,
@@ -72,10 +72,10 @@ export default (app, gl) => class PBDSimulation {
   init() {
     this.compute_bounds();
     const positions = this.generate_particles({ 
-      w: 1.5, h: 1.5,
+      w: 2, h: 2,
       o_x: this.r_params.width / 2, 
       o_y: this.r_params.height / 2, 
-      d_x: 35, d_y: 25
+      d_x: 30, d_y: 20
     });
 
     app.info = { ...app.info, particles: this.num_particles };
@@ -224,9 +224,13 @@ export default (app, gl) => class PBDSimulation {
     }
     this.steps.pred_pos.exec();
     this.steps.jank_frnn.exec();
-    this.steps.calc_lambda.exec();
-    this.steps.calc_dp.exec();
-    this.steps.update_pred_pos.exec();
+
+    for (let i = 0; i < 3; ++i) {
+      this.steps.calc_lambda.exec();
+      this.steps.calc_dp.exec();
+      this.steps.update_pred_pos.exec();
+    }
+
     this.steps.update_vel.exec();
     this.steps.update_pos.exec();
   }
@@ -239,10 +243,10 @@ export default (app, gl) => class PBDSimulation {
     this.next_id = -1;
     this.particles.length = 0;
     const positions = this.generate_particles({ 
-      w: 1.5, h: 1.5,
+      w: 2, h: 2,
       o_x: this.r_params.width / 2, 
       o_y: this.r_params.height / 2, 
-      d_x: 35, d_y: 25
+      d_x: 30, d_y: 20
     });
 
     this.textures.pos.bind();

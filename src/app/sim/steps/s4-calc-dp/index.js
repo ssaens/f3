@@ -13,6 +13,9 @@ export default (gl, app, sim) => {
         u_num_particles: '1ui',
         u_kernel_r: '1f',
         u_rest_density: '1f',
+        u_s_corr_dq_mult: '1f',
+        u_s_corr_k: '1f',
+        u_s_corr_n: '1f',
         u_bin_size: '1f',
         u_y_bins: '1ui',
         u_num_bins: '1ui',
@@ -30,6 +33,9 @@ export default (gl, app, sim) => {
       .uniform('u_num_particles', sim.num_particles)
       .uniform('u_kernel_r', sim.s_params.kernel_r)
       .uniform('u_rest_density', sim.s_params.rest_density)
+      .uniform('u_s_corr_dq_mult', sim.s_params.s_corr_dq_mult)
+      .uniform('u_s_corr_k', sim.s_params.s_corr_k)
+      .uniform('u_s_corr_n', sim.s_params.s_corr_n)
       .uniform('u_bin_size', sim.s_params.bin_size)
       .uniform('u_y_bins', sim.s_params.y_bins)
       .uniform('u_num_bins', sim.s_params.num_bins)

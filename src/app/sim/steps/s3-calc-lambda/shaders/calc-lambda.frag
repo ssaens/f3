@@ -24,7 +24,7 @@ layout(location = 0) out float _den;
 
 float poly6(vec2 ri) {
   float r = length(ri);
-  if (r >= u_kernel_r)
+  if (r >= u_kernel_r || r < EPS_F)
     return 0.f;
   return (315.f / (64.f * PI * pow(u_kernel_r, 9.f))) * pow(u_kernel_r * u_kernel_r - r * r, 3.f);
 }
