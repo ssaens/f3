@@ -13,7 +13,14 @@ export default (gl, app, sim) => {
         u_num_particles: '1ui',
         u_kernel_r: '1f',
         u_rest_density: '1f',
-        u_relaxation: '1f'
+        u_relaxation: '1f',
+        u_bin_size: '1f',
+        u_y_bins: '1ui',
+        u_num_bins: '1ui',
+        u_pred_pos: '1i',
+        u_bins: '1i',
+        u_bin_count: '1i',
+        u_bin_start: '1i'
       }
     });
 
@@ -24,6 +31,13 @@ export default (gl, app, sim) => {
       .uniform('u_kernel_r', sim.s_params.kernel_r)
       .uniform('u_rest_density', sim.s_params.rest_density)
       .uniform('u_relaxation', sim.s_params.relaxation)
+      .uniform('u_bin_size', sim.s_params.bin_size)
+      .uniform('u_y_bins', sim.s_params.y_bins)
+      .uniform('u_num_bins', sim.s_params.num_bins)
+      .uniform('u_pred_pos', 0)
+      .uniform('u_bins', 1)
+      .uniform('u_bin_count', 2)
+      .uniform('u_bin_start', 3)
       .unuse();
   }
 
@@ -31,6 +45,15 @@ export default (gl, app, sim) => {
     const fb = sim.swap_fbo();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, sim.textures.den._tex, 0);
+
+    gl.activeTexture(gl.TEXTURE0);
+    sim.textures.pred_pos.bind();
+    gl.activeTexture(gl.TEXTURE1);
+    sim.textures.bins.bind();
+    gl.activeTexture(gl.TEXTURE2);
+    sim.textures.bin_count.bind();
+    gl.activeTexture(gl.TEXTURE3);
+    sim.textures.bin_start.bind();
 
     _calc_lambda_prog.use();
     gl.clearColor(0, 0, 0, 0);

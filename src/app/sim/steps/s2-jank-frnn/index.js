@@ -8,7 +8,9 @@ export default (gl, app, sim) => {
   let _bin_count;
 
   function bin(x, y) {
-    return x < 0 ? 1 : 0;
+    let x_c = Math.trunc(x / sim.s_params.bin_size);
+    let y_c = Math.trunc(y / sim.s_params.bin_size);
+    return y_c * sim.s_params.y_bins + x_c;
   }
 
   function init() {
@@ -26,6 +28,8 @@ export default (gl, app, sim) => {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, sim.textures.pred_pos._tex, 0);
     gl.readPixels(0, 0, sim.num_particles, 1, gl.RGBA, gl.FLOAT, _pos_buf);
 
+    _bin_count.fill(0);
+    
     let x;
     let y;
     let b;
@@ -38,8 +42,8 @@ export default (gl, app, sim) => {
 
     _counts[0] = _bin_count[0];
     _bin_start[0] = 0;
-    for (let i = 1; i < sim.num_bins; ++i) {
-      _counts[i] = _bin_count[i - 1] + _bin_count[i];
+    for (let i = 1; i < sim.s_params.num_bins; ++i) {
+      _counts[i] = _counts[i - 1] + _bin_count[i];
       _bin_start[i] = _bin_start[i - 1] + _bin_count[i - 1];
     }
 
@@ -53,7 +57,7 @@ export default (gl, app, sim) => {
     sim.textures.bins.bind();
     gl.texImage2D(gl.TEXTURE_2D, 0,
                   gl.R32UI,
-                  this.num_particles, 1,
+                  sim.num_particles, 1,
                   0,
                   gl.RED_INTEGER, gl.UNSIGNED_INT,
                   _bins);
@@ -61,7 +65,7 @@ export default (gl, app, sim) => {
     sim.textures.bin_count.bind();
     gl.texImage2D(gl.TEXTURE_2D, 0,
                   gl.R32UI,
-                  this.num_bins, 1,
+                  sim.s_params.num_bins, 1,
                   0,
                   gl.RED_INTEGER, gl.UNSIGNED_INT,
                   _bin_count);
@@ -69,7 +73,7 @@ export default (gl, app, sim) => {
     sim.textures.bin_start.bind();
     gl.texImage2D(gl.TEXTURE_2D, 0,
                   gl.R32UI,
-                  this.num_bins, 1,
+                  sim.s_params.num_bins, 1,
                   0,
                   gl.RED_INTEGER, gl.UNSIGNED_INT,
                   _bin_start);

@@ -43,10 +43,6 @@ export default (gl, app, sim) => (() => {
     gl.viewport(0, 0, sim.num_particles, 1);
     gl.drawArrays(gl.POINTS, 0, sim.num_particles);
     _vel_update_prog.unuse();
-
-    // const p = new Uint16Array(sim.num_particles * 2);
-    // gl.readPixels(0, 0, sim.num_particles, 1, gl.RG, gl.HALF_FLOAT, p);
-    // console.log('vel', p[0], p[1]);
   }
 
   return {

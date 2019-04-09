@@ -2,6 +2,8 @@ import { Texture, to_half } from '~/src/gl-util';
 import s1_pred_pos from './steps/s1-pred-pos';
 import s2_jank_frnn from './steps/s2-jank-frnn';
 import s3_calc_lambda from './steps/s3-calc-lambda';
+import s4_calc_dp from './steps/s4-calc-dp';
+import s5_update_pred_pos from './steps/s5-update-pred-pos';
 import s6_update_vel from './steps/s6-update-vel';
 import s7_update_pos from './steps/s7-update-pos';
 import s8_render_particles from './steps/s8-render-particles';
@@ -45,6 +47,7 @@ export default (app, gl) => class PBDSimulation {
       pos: null,                // position
       vel: null,                // velocity 
       pred_pos: null,           // predicted position
+      d_pos: null,
       den: null,                // density lambda
       temp: null,               // temporary storage
       bins: null,               // particle ids sorted by bin id
@@ -56,6 +59,8 @@ export default (app, gl) => class PBDSimulation {
       pred_pos: s1_pred_pos(gl, app, this),
       jank_frnn: s2_jank_frnn(gl, app, this),
       calc_lambda: s3_calc_lambda(gl, app, this),
+      calc_dp: s4_calc_dp(gl, app, this),
+      update_pred_pos: s5_update_pred_pos(gl, app, this),
       update_vel: s6_update_vel(gl, app, this),
       update_pos: s7_update_pos(gl, app, this),
       render_particles: s8_render_particles(gl, app, this)
@@ -69,7 +74,7 @@ export default (app, gl) => class PBDSimulation {
     const positions = this.generate_particles({ 
       o_x: this.r_params.width / 2, 
       o_y: this.r_params.height / 2, 
-      d_x: 20, d_y: 10 
+      d_x: 25, d_y: 15 
     });
 
     app.info = { ...app.info, particles: this.num_particles };
@@ -89,7 +94,6 @@ export default (app, gl) => class PBDSimulation {
 
     for (let i = -num_w_particles / 2; i < num_w_particles / 2; ++i) {
       for (let j = -num_h_particles / 2; j < num_h_particles / 2; ++j) {
-        let cell = 0;
         positions.push(o_x + i * offset_x, o_y + j * offset_y);
         this.particles.push(++this.next_id);
       }
@@ -121,6 +125,8 @@ export default (app, gl) => class PBDSimulation {
     this.steps.pred_pos.init();
     this.steps.jank_frnn.init();
     this.steps.calc_lambda.init();
+    this.steps.calc_dp.init();
+    this.steps.update_pred_pos.init();
     this.steps.update_vel.init();
     this.steps.update_pos.init();
     this.steps.render_particles.init();
@@ -157,14 +163,14 @@ export default (app, gl) => class PBDSimulation {
 
     const bin_count = new Texture(gl, 0,
                                   gl.R32UI,
-                                  this.num_bins, 1,
+                                  this.s_params.num_bins, 1,
                                   0,
                                   gl.RED_INTEGER, gl.UNSIGNED_INT,
                                   null);
 
     const bin_start = new Texture(gl, 0,
                                   gl.R32UI,
-                                  this.num_bins, 1,
+                                  this.s_params.num_bins, 1,
                                   0,
                                   gl.RED_INTEGER, gl.UNSIGNED_INT,
                                   null);
@@ -176,22 +182,19 @@ export default (app, gl) => class PBDSimulation {
                             gl.RED, gl.FLOAT,
                             null);
 
-    // const dp_pre = new Texture(gl, 0,
-    //                            gl.RG16F,
-    //                            this.num_particles, 1,
-    //                            0,
-    //                            gl.RG, gl.HALF_FLOAT,
-    //                            new Uint16Array(positions.map(() => 0)));
+    const d_pos = new Texture(gl, 0,
+                              gl.RG32F,
+                              this.num_particles, 1,
+                              0,
+                              gl.RG, gl.FLOAT,
+                              null);
 
-    // const dp_post = new Texture(gl, 0,
-    //                             gl.RG16F,
-    //                             this.num_particles, 1,
-    //                             0,
-    //                             gl.RG, gl.HALF_FLOAT,
-    //                             new Uint16Array(positions.map(() => 0)));
-
-    // const v_vort = null;
-
+    const temp = new Texture(gl, 0,
+                             gl.RG32F,
+                             this.num_particles, 1,
+                             0,
+                             gl.RG, gl.FLOAT,
+                             null);
     this.textures.pos = pos;
     this.textures.vel = vel;
     this.textures.pred_pos = pred_pos;
@@ -199,6 +202,8 @@ export default (app, gl) => class PBDSimulation {
     this.textures.bin_count = bin_count;
     this.textures.bin_start = bin_start;
     this.textures.den = den;
+    this.textures.d_pos = d_pos;
+    this.textures.temp = temp;
   }
 
   init_framebuffers() {
@@ -219,6 +224,8 @@ export default (app, gl) => class PBDSimulation {
     this.steps.pred_pos.exec();
     this.steps.jank_frnn.exec();
     this.steps.calc_lambda.exec();
+    this.steps.calc_dp.exec();
+    this.steps.update_pred_pos.exec();
     this.steps.update_vel.exec();
     this.steps.update_pos.exec();
   }
