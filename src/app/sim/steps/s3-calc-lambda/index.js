@@ -15,7 +15,7 @@ export default (gl, app, sim) => {
         u_rest_density: '1f',
         u_relaxation: '1f',
         u_bin_size: '1f',
-        u_y_bins: '1ui',
+        u_x_bins: '1ui',
         u_num_bins: '1ui',
         u_pred_pos: '1i',
         u_bins: '1i',
@@ -32,7 +32,7 @@ export default (gl, app, sim) => {
       .uniform('u_rest_density', sim.s_params.rest_density)
       .uniform('u_relaxation', sim.s_params.relaxation)
       .uniform('u_bin_size', sim.s_params.bin_size)
-      .uniform('u_y_bins', sim.s_params.y_bins)
+      .uniform('u_x_bins', sim.s_params.x_bins)
       .uniform('u_num_bins', sim.s_params.num_bins)
       .uniform('u_pred_pos', 0)
       .uniform('u_bins', 1)

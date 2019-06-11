@@ -12,7 +12,7 @@ uniform float u_kernel_r;
 uniform float u_vort_eps;
 uniform float u_visc_c;
 uniform float u_bin_size;
-uniform uint u_y_bins;
+uniform uint u_x_bins;
 uniform uint u_num_bins;
 
 uniform sampler2D u_pred_pos;
@@ -44,7 +44,7 @@ ivec2 bin_index(vec2 pos) {
 }
 
 uint bin(ivec2 bin_index) {
-  return uint(bin_index.y) * u_y_bins + uint(bin_index.x);
+  return uint(bin_index.y) * u_x_bins + uint(bin_index.x);
 }
 
 void main() {

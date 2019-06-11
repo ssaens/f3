@@ -47,11 +47,11 @@ export default (app, gl) => class PBDSimulation {
       pos: null,                // position
       vel: null,                // velocity 
       pred_pos: null,           // predicted position
-      d_pos: null,
+      d_pos: null,              // change in position
       den: null,                // density lambda
       temp: null,               // temporary storage
       bins: null,               // particle ids sorted by bin id
-      bin_start: null,          // bin id -> index in `bin` texture
+      bin_start: null,          // bin id -> index in `bins` texture
       bin_count: null           // bin id -> number of entries in bin
     };
     
@@ -196,6 +196,7 @@ export default (app, gl) => class PBDSimulation {
                              0,
                              gl.RG, gl.FLOAT,
                              null);
+    
     this.textures.pos = pos;
     this.textures.vel = vel;
     this.textures.pred_pos = pred_pos;

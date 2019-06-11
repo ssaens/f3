@@ -29,7 +29,7 @@ export default (gl, app, sim) => (() => {
         u_vort_eps: '1f',
         u_visc_c: '1f',
         u_bin_size: '1f',
-        u_y_bins: '1ui',
+        u_x_bins: '1ui',
         u_num_bins: '1ui',
         u_pred_pos: '1i',
         u_vel: '1i',
@@ -56,7 +56,7 @@ export default (gl, app, sim) => (() => {
       .uniform('u_vort_eps', sim.s_params.vort_eps)
       .uniform('u_visc_c', sim.s_params.visc_c)
       .uniform('u_bin_size', sim.s_params.bin_size)
-      .uniform('u_y_bins', sim.s_params.y_bins)
+      .uniform('u_x_bins', sim.s_params.x_bins)
       .uniform('u_num_bins', sim.s_params.num_bins)
       .uniform('u_pred_pos', 1)
       .uniform('u_vel', 2)

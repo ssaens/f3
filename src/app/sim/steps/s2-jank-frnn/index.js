@@ -10,7 +10,7 @@ export default (gl, app, sim) => {
   function bin(x, y) {
     let x_c = Math.trunc(x / sim.s_params.bin_size);
     let y_c = Math.trunc(y / sim.s_params.bin_size);
-    return y_c * sim.s_params.y_bins + x_c;
+    return y_c * sim.s_params.x_bins + x_c;
   }
 
   function init() {
